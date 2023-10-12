@@ -2,10 +2,19 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+namespace Player 
+{
+
 public class Engine : MonoBehaviour
 {
     Vector3 VelocityLastFrame;
-    Vector2 Velocity;
+    Vector2 velocity;
+
+    public Vector3 Velocity
+    {
+        get => velocity;
+    }
+
     [SerializeField]
     float MaxVelocityMagnitude = 20;
     [SerializeField]
@@ -51,12 +60,13 @@ public class Engine : MonoBehaviour
         AddedVelocity *= GetReverseMultiplier(); 
         if(AddedVelocity != Vector2.zero) 
         {
-            Velocity = ((Velocity + AddedVelocity).magnitude > MaxVelocityMagnitude) ? (Velocity + AddedVelocity).normalized * MaxVelocityMagnitude : Velocity + AddedVelocity;
+            velocity = ((velocity + AddedVelocity).magnitude > MaxVelocityMagnitude) ? (velocity + AddedVelocity).normalized * MaxVelocityMagnitude : velocity + AddedVelocity;
         }
-        else if (AddedVelocity == Vector2.zero && Velocity != Vector2.zero)
+        else if (AddedVelocity == Vector2.zero && velocity != Vector2.zero)
         {
             float DecelerationAmount = (Time.deltaTime / DecelerationInSeconds) * MaxVelocityMagnitude;
-            Velocity = ((Velocity - (Velocity.normalized * DecelerationAmount)).magnitude < MinVelocityMagnitude) ? Vector2.zero : Velocity - Velocity.normalized * (DecelerationAmount);
+            velocity = ((velocity - (velocity.normalized * DecelerationAmount)).magnitude < MinVelocityMagnitude) ? Vector2.zero : velocity - velocity.normalized * (DecelerationAmount);
         }
     }
+}
 }
