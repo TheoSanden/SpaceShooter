@@ -4,12 +4,16 @@ using UnityEngine;
 
 namespace AI 
 {
+    
     public class Ship_Basic : Ship
     {
+        [SerializeField]
+        float MovementSpeed = 1;
         // Start is called before the first frame update
-        protected override void Start()
+        protected virtual void Start()
         {
-            base.Start();
+            brain.Blackboard.SetValueAsFloat("MovementSpeed", MovementSpeed);
+            health.OnHealthZero += OnHealthZero;
         }
         // Update is called once per frame
         void Update()
@@ -23,6 +27,14 @@ namespace AI
         protected override void OnQueue()
         {
             
+        }
+        protected virtual void OnHealthZero() 
+        {
+            Destroy(this.gameObject);
+        }
+        public void SetInitialPosition(Vector2 position) 
+        {
+            brain.Blackboard.SetValueAsVector("InitialPosition",position);
         }
     }
 }

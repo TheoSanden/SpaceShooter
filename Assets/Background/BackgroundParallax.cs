@@ -25,7 +25,7 @@ public class BackgroundParallax : MonoBehaviour
         foreach (BackgroundLayer Layer in Layers)
         {
             List<GameObject> BackgroundList = new List<GameObject>();
-            for(float i = -CameraBounds.y *2; i < CameraBounds.y*2; i += CameraBounds.y * 2) 
+            for(float i = -CameraBounds.y *2; i < CameraBounds.y; i += CameraBounds.y * 2) 
             {
                 BackgroundList.Add(Instantiate(Layer.BackgroundObject,new Vector3(0,i,0),Quaternion.identity));
             }

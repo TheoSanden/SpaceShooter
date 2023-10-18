@@ -5,12 +5,13 @@ using UnityEngine;
 public class Health : MonoBehaviour
 {
     public delegate void OnChange(float change);
+    public delegate void BasicDelegate();
     [SerializeField]
     int MaxHealth;
     int CurrentHealth;
 
     public OnChange OnHealthChange;
-    public OnChange OnHealthZero;
+    public BasicDelegate OnHealthZero;
     public OnChange OnHealthLoss;
     public OnChange OnHealthGain;
 
@@ -46,7 +47,7 @@ public class Health : MonoBehaviour
 
         if (CurrentHealth == 0) 
         {
-            OnHealthZero?.Invoke(0);
+            OnHealthZero?.Invoke();
         }
     }
 }

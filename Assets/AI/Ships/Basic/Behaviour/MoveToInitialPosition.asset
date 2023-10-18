@@ -9,6 +9,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 402134b7a8f88a143b083845ce1d6877, type: 3}
-  m_Name: MoveBehaviour
+  m_Script: {fileID: 11500000, guid: b681c3a9bc5c8d343beb92509c1906f7, type: 3}
+  m_Name: MoveToInitialPosition
   m_EditorClassIdentifier: 
+  MovementType: 1
+  TargetKeyName: InitialPosition
+  SpeedKeyName: MovementSpeed

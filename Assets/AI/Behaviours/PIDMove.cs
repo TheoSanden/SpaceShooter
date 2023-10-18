@@ -81,6 +81,15 @@ namespace AI
             }
             Initialized = true;
         }
+
+        public override void OnBehaviourEnd(Brain brain)
+        {
+          
+        }
+        public override void OnBehaviourStart(Brain brain)
+        {
+           
+        }
     }
 }
 

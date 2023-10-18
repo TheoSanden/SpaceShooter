@@ -4,12 +4,14 @@ using UnityEngine;
 
 namespace AI
 {
-    [RequireComponent(typeof(Brain))]
+    [RequireComponent(typeof(Brain),typeof(Health))]
     public abstract class Ship : MonoBehaviour
     {
-        Brain brain;
-        protected virtual void Start()
+        protected Health health;
+        protected Brain brain;
+        protected virtual void Awake()
         {
+            health = GetComponent<Health>();
             brain = this.GetComponent<Brain>();
         }
         protected abstract void OnPop();
