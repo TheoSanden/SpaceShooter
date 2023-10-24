@@ -108,6 +108,7 @@ MonoBehaviour:
     Children: []
   - Behaviour: {fileID: 11400000, guid: 2b45f2e888ba74a4ead8eae205f30b43, type: 2}
     Children: []
+  DestroyEvent: {fileID: 11400000, guid: 533953f724c8cbf4388a21b5e63cc3ed, type: 2}
 --- !u!114 &7368546705510429013
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -143,7 +144,7 @@ PolygonCollider2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7368546705510429015}
-  m_Enabled: 1
+  m_Enabled: 0
   m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 1

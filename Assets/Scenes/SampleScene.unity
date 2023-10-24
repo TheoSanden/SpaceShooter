@@ -441,9 +441,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7accce3f7ecc3974782bdd57bcc99db8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxVelocityMagnitude: 0.3
+  MaxVelocityMagnitude: 0.5
   MinVelocityMagnitude: 0.001
-  AccelerationInSeonds: 0.5
+  AccelerationInSeconds: 1
   DecelerationInSeconds: 2
   MaxReverseAccelerationMultiplier: 2
 --- !u!114 &623809179
@@ -786,6 +786,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1857897775}
   - component: {fileID: 1857897776}
+  - component: {fileID: 1857897777}
   m_Layer: 0
   m_Name: ShipSpawner
   m_TagString: Untagged
@@ -820,6 +821,87 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9e1e424b019df14fa9e75f0799410e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Ship_Prefab: {fileID: 7368546705510429013, guid: 863f5683a54d7d640b30fd4fff90414f, type: 3}
+  Ship_Prefab: {fileID: 7368546705510429015, guid: 863f5683a54d7d640b30fd4fff90414f, type: 3}
   VPatternBounds: {x: 80, y: 40}
-  ShipAmountPerVPattern: 20000
+  ShipAmountPerVPattern: 7
+--- !u!114 &1857897777
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1857897774}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc783625213150f45b3d273a3087f8e1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Event: {fileID: 11400000, guid: 533953f724c8cbf4388a21b5e63cc3ed, type: 2}
+  Response:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 1857897776}
+        m_TargetAssemblyTypeName: ShipSpawner, Assembly-CSharp
+        m_MethodName: HandleDestroyedShip
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!1 &2022028635
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2022028637}
+  - component: {fileID: 2022028636}
+  m_Layer: 0
+  m_Name: EntitySubScene
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2022028636
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2022028635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 45a335734b1572644a6a5d09d87adc65, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _SceneAsset: {fileID: 102900000, guid: 7defcd8167374f74fbd41f669f881409, type: 3}
+  _HierarchyColor: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+  AutoLoadScene: 1
+  _SceneGUID:
+    Value:
+      x: 417136343
+      y: 1207202678
+      z: 1727090111
+      w: 2420214009
+--- !u!4 &2022028637
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2022028635}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

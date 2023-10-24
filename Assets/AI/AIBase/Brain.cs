@@ -102,6 +102,9 @@ namespace AI
 
         public BlackBoard Blackboard = new BlackBoard();
         bool FirstProcessUpdate = false;
+
+        [SerializeField]
+        GameObjectEvent DestroyEvent;
         private void Start()
         {
             for (int i = 0; i < Sequences.Length; i++)
@@ -168,6 +171,17 @@ namespace AI
             foreach (var child in Sequence.Children)
             {
                 child.OnBehaviourEnd(this);
+            }
+        }
+        public void DestroyHost()
+        {
+            if (DestroyEvent != null) 
+            {
+                DestroyEvent.Raise(this.gameObject);
+            }
+            else 
+            {
+                Destroy(this.gameObject);
             }
         }
     }

@@ -20,13 +20,13 @@ namespace AI
         {
 
         }
-        protected override void OnPop()
+        public override void OnPop()
         {
-            
+            base.OnPop();   
         }
-        protected override void OnQueue()
+        public override void OnQueue()
         {
-            
+            base.OnQueue();
         }
         protected virtual void OnHealthZero() 
         {

@@ -20,7 +20,7 @@ public class Engine : MonoBehaviour
     [SerializeField]
     float MinVelocityMagnitude = 0.2f;
     [SerializeField]
-    float AccelerationInSeonds = 1;
+    float AccelerationInSeconds = 1;
     [SerializeField]
     float DecelerationInSeconds = 2;
     [SerializeField]
@@ -55,7 +55,7 @@ public class Engine : MonoBehaviour
     {
         VelocityLastFrame = Velocity;
 
-        Vector2 AddedVelocity = new Vector2(Input.GetAxisRaw("Horizontal") * (Time.deltaTime/AccelerationInSeonds) * MaxVelocityMagnitude, Input.GetAxisRaw("Vertical") * (Time.deltaTime / AccelerationInSeonds) * MaxVelocityMagnitude);
+        Vector2 AddedVelocity = new Vector2(Input.GetAxisRaw("Horizontal") * (Time.deltaTime/AccelerationInSeconds) * MaxVelocityMagnitude, Input.GetAxisRaw("Vertical") * (Time.deltaTime / AccelerationInSeconds) * MaxVelocityMagnitude);
         AddedVelocity *= GetReverseMultiplier(); 
         if(AddedVelocity != Vector2.zero) 
         {

@@ -8,7 +8,11 @@ public class ShipSpawner : MonoBehaviour
 {
     // Start is called before the first frame updat
     [SerializeField]
-    Ship_Basic Ship_Prefab;
+    GameObject Ship_Prefab;
+
+    [SerializeField]
+    ObjectPooler<GameObject> Ship_Basic_Pooler = new ObjectPooler<GameObject>();
+
     [SerializeField]
     Vector2 VPatternBounds = new Vector2(100,50);
     [SerializeField]
@@ -17,10 +21,11 @@ public class ShipSpawner : MonoBehaviour
     Vector2 CameraBounds;
 
 
-    float ShipSpawnTime = 2;
+    float ShipSpawnTime = 3;
     float ShipSpawnTimer = 0;
     void Start()
     {
+        Ship_Basic_Pooler.Initialize(Ship_Prefab,OnPop, OnQueue);
         CameraBounds = new Vector2(Camera.main.orthographicSize * (float)(16.0/9.0),Camera.main.orthographicSize);
         SpawnBasicShipInVPattern();
     }
@@ -99,10 +104,25 @@ public class ShipSpawner : MonoBehaviour
 
             Vector2 SpawnPosition = new Vector2(XPosition, YPosition);
 
-            Ship_Basic Ship = Instantiate(Ship_Prefab, SpawnPosition, Ship_Prefab.transform.rotation);
+            Ship_Basic Ship = Ship_Basic_Pooler.Pop().GetComponent<Ship_Basic>();
+            Ship.transform.position = SpawnPosition;
+            Ship.transform.parent = this.transform;
+            Ship.transform.rotation = Ship_Prefab.transform.rotation;
             Vector2 YLength = (Vector2.up * ((VPatternBounds.y * 2) + (CameraBounds.y * 2)));
             Vector2 MoveToPosition = SpawnPosition - YLength;
             Ship.SetInitialPosition(MoveToPosition);
         }
+    }
+    public void HandleDestroyedShip(GameObject gameObject) 
+    {
+        Ship_Basic_Pooler.Enqueu(gameObject);
+    }
+    void OnPop(GameObject ship) 
+    {
+        ship.GetComponent<Ship>().OnPop();
+    }
+    void OnQueue(GameObject ship) 
+    {
+        ship.GetComponent<Ship>().OnQueue();
     }
 }

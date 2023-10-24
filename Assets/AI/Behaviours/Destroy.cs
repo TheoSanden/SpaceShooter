@@ -17,7 +17,7 @@ namespace AI
         }
         public override void OnBehaviourStart(Brain brain)
         {
-            Destroy(brain.gameObject);
+            brain.DestroyHost();
         }
         public override BehaviourState Process(Brain brain)
         {
