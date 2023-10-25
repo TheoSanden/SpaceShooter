@@ -24,6 +24,7 @@ public class CameraBounds : MonoBehaviour
         transform.position = viewPos;
     }
 
+#if UNITY_EDITOR
     private void OnDrawGizmos()
     {
         Handles.matrix = transform.localToWorldMatrix;
@@ -31,4 +32,5 @@ public class CameraBounds : MonoBehaviour
         Vector3[] points = new Vector3[5]{new Vector2(-BoundsWidth,BoundsHeight), new Vector2(BoundsWidth, BoundsHeight), new Vector2(BoundsWidth, -BoundsHeight), new Vector2(-BoundsWidth,-BoundsHeight), new Vector2(-BoundsWidth, BoundsHeight) };
         Handles.DrawAAPolyLine(5,points);
     }
+#endif
 }

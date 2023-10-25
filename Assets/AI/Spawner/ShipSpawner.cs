@@ -41,6 +41,7 @@ public class ShipSpawner : MonoBehaviour
             ShipSpawnTimer = 0;
         }
     }
+#if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.white;
@@ -60,6 +61,7 @@ public class ShipSpawner : MonoBehaviour
                                           SpawnBoundsCenter + new Vector2(-VPatternBounds.x,VPatternBounds.y)};
         Handles.DrawAAPolyLine(10,points);
     }
+#endif
 
     void SpawnBasicShipInVPattern() 
     {
