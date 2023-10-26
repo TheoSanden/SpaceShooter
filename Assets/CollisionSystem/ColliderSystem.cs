@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 using Theo;
 public class ColliderSystem : MonoBehaviour
 {
-    HashSet<Theo.Collider> Colliders = new HashSet<Theo.Collider>();
     static ColliderSystem instance;
+
+    Dictionary<CollisionLayer,HashSet<Theo.Collider>> CollisionLayerDictionary = new Dictionary<CollisionLayer, HashSet<Theo.Collider>>();
 
     ColliderSystem()
     {
@@ -19,6 +21,13 @@ public class ColliderSystem : MonoBehaviour
             instance = this;
         }
     }
+    private void Awake()
+    {
+        foreach(var i in Enum.GetValues(typeof(CollisionLayer))) 
+        {
+            CollisionLayerDictionary.Add((CollisionLayer)i,new HashSet<Theo.Collider>());
+        }
+    }
 
     public static ColliderSystem Instance 
     {
@@ -27,25 +36,29 @@ public class ColliderSystem : MonoBehaviour
 
     public void Register(Theo.Collider collider) 
     {
-        Colliders.Add(collider);
+        CollisionLayerDictionary[collider.InLayer].Add(collider);
     }
     public void DeRegister(Theo.Collider collider) 
     {
-        Colliders.Remove(collider);
+        CollisionLayerDictionary[collider.InLayer].Remove(collider);
     }
     private void FixedUpdate()
     {
-        foreach (Theo.Collider collider in Colliders) 
+        foreach (HashSet<Theo.Collider> set in CollisionLayerDictionary.Values)
         {
-            foreach (Theo.Collider other in Colliders) 
+            foreach (Theo.Collider collider in set)
             {
-                if(other == collider) { continue; }
-
-                if (collider.IsInside(other)) 
+                foreach (CollisionLayer layer in collider.CollideWith)
                 {
-                    collider.onCollision(other.gameObject);
+                    foreach (Theo.Collider other in CollisionLayerDictionary[layer])
+                    {
+                        if (other == collider) { continue; }
+
+                        collider.CalculateCollision(other);
+                    }
                 }
             }
         }
     }
 }
+

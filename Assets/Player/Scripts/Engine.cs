@@ -12,7 +12,7 @@ public class Engine : MonoBehaviour
 
     public Vector3 Velocity
     {
-        get => velocity;
+        get => velocity * Time.deltaTime;
     }
 
     [SerializeField]

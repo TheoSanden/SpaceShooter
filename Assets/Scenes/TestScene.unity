@@ -153,6 +153,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00308a6df066e1142a57d0e4365ae6b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inLayer: 0
+  collideWith: 
   points:
   - x: -0.51
     y: -0.3
@@ -388,6 +390,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 00308a6df066e1142a57d0e4365ae6b0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  inLayer: 0
+  collideWith: 
   points:
   - x: -0.51
     y: -0.3
@@ -397,6 +401,12 @@ MonoBehaviour:
     z: 0
   - x: 0.5
     y: -0.3
+    z: 0
+  - x: -0.23
+    y: -1.57
+    z: 0
+  - x: -1.71
+    y: -1.57
     z: 0
 --- !u!212 &2120578086
 SpriteRenderer:

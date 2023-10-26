@@ -441,7 +441,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7accce3f7ecc3974782bdd57bcc99db8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MaxVelocityMagnitude: 0.5
+  MaxVelocityMagnitude: 200
   MinVelocityMagnitude: 0.001
   AccelerationInSeconds: 1
   DecelerationInSeconds: 2
@@ -823,7 +823,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Ship_Prefab: {fileID: 7368546705510429015, guid: 863f5683a54d7d640b30fd4fff90414f, type: 3}
   VPatternBounds: {x: 80, y: 40}
-  ShipAmountPerVPattern: 5000
+  ShipAmountPerVPattern: 5
 --- !u!114 &1857897777
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -852,3 +852,47 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1 &2051225664
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2051225666}
+  - component: {fileID: 2051225665}
+  m_Layer: 0
+  m_Name: CollisionSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2051225665
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2051225664}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 41d2ce49459bffb41a5ef8eaa1f03171, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &2051225666
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2051225664}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -153.54146, y: -14.475953, z: -2.2871099}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

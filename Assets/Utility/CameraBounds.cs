@@ -10,10 +10,18 @@ public class CameraBounds : MonoBehaviour
     float BoundsHeight;
     [SerializeField]
     float BoundsWidth;
+
+    public static Vector2 GetCameraBounds() 
+    {
+        return Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
+    }
+    public static bool IsWithinBounds(Vector2 position,Vector2 bounds, Vector2 center) 
+    {
+        return (position.x < (center.x + bounds.x) && position.x > (center.x - bounds.x) && position.y < (center.y + bounds.y) && position.y > (center.y - bounds.y));
+    }
     void Start()
     {
-        Bounds = Camera.main.ScreenToWorldPoint(new Vector3(Screen.width,Screen.height, Camera.main.transform.position.z));
-        print(Bounds);
+        Bounds = GetCameraBounds();
     }
 
     private void LateUpdate()
