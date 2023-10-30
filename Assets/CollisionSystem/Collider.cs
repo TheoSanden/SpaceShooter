@@ -18,7 +18,6 @@ namespace Theo
         CollisionLayer inLayer;
         [SerializeField]
         CollisionLayer[] collideWith;
-
         public CollisionLayer InLayer { get => inLayer; }
         public CollisionLayer[] CollideWith { get => collideWith; }
 
@@ -27,6 +26,15 @@ namespace Theo
 
         [ReadOnly,NativeDisableContainerSafetyRestriction]
         protected NativeArray<float3> points_NativeArray;
+
+        protected Bounds bounds;
+        public Bounds Bounds 
+        {
+            get 
+            {
+                return bounds;
+            }
+        }
 
         public NativeArray<float3> NativePoints 
         {
@@ -52,7 +60,19 @@ namespace Theo
         public OnCollision onCollision;
         //public abstract bool IsInside(Collider Other);
         public abstract void CalculateCollision(Collider other);
+        protected virtual void CalculateBounds() 
+        {
+            float x = 0;
+            float y = 0;
+            foreach(float3 point in points) 
+            {
+                if(Mathf.Abs(point.x) > x) { x = point.x; }
+                if(Mathf.Abs(point.y) > y) { y = point.y; }
+            }
+            Vector3 size = new Vector3(x * 2,y * 2);
 
+            bounds = new Bounds(this.transform.position, size);
+        }
         void CreateNativeArrayPoints() 
         {
             points_NativeArray = new NativeArray<float3>(points.Length, Allocator.Persistent);
@@ -64,6 +84,7 @@ namespace Theo
         private void Awake()
         {
             CreateNativeArrayPoints();
+            CalculateBounds();
         }
         protected virtual void OnEnable()
         {
@@ -86,6 +107,12 @@ namespace Theo
                 ColliderSystem.Instance.DeRegister(this);
             }
             points_NativeArray.Dispose();
+        }
+
+
+        public void UpdateBounds()
+        {
+            bounds.center = this.transform.position;
         }
     }
 }

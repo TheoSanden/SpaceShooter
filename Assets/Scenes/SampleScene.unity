@@ -881,6 +881,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 41d2ce49459bffb41a5ef8eaa1f03171, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  collisionChannels:
+  - layer: 0
+    canCollideWith: 02000000
 --- !u!4 &2051225666
 Transform:
   m_ObjectHideFlags: 0

@@ -15,6 +15,10 @@ public class CameraBounds : MonoBehaviour
     {
         return Camera.main.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, Camera.main.transform.position.z));
     }
+    public static Bounds GetCameraBoundsClass()
+    {
+        return new Bounds((Vector2)Camera.main.transform.position,GetCameraBounds() * 2);
+    }
     public static bool IsWithinBounds(Vector2 position,Vector2 bounds, Vector2 center) 
     {
         return (position.x < (center.x + bounds.x) && position.x > (center.x - bounds.x) && position.y < (center.y + bounds.y) && position.y > (center.y - bounds.y));
