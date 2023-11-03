@@ -142,10 +142,7 @@ namespace AI
                 CurrentSequenceIndex = (CurrentSequenceIndex + 2 > Sequences.Length)? 0: CurrentSequenceIndex + 1;
 
                 FirstProcessUpdate = false;
-                if (EnableDebugLog)
-                {
-                   // Debug.Log("moving to " + Sequences[CurrentSequenceIndex]);
-                }
+
                 return;
             }
 
@@ -154,7 +151,16 @@ namespace AI
                 child.Process(this);
             }
         }
-
+        private void OnEnable()
+        {
+            CurrentSequenceIndex = 0;
+            FirstProcessUpdate = false;
+        }
+        private void OnDisable()
+        {
+            CurrentSequenceIndex = 0;
+            FirstProcessUpdate = false;
+        }
         private void OnSequenceStart(Sequencer Sequence) 
         {
             Sequence.Behaviour.OnBehaviourStart(this);

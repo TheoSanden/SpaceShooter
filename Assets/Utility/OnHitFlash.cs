@@ -54,7 +54,7 @@ public class OnHitFlash : MonoBehaviour
         yield return new WaitForSeconds(hitDuration);
         sr.sharedMaterial = sr.material = baseMaterial;
     }
-    public void Hit_Wrapper(float Change) 
+    public void Hit_Wrapper(int result) 
     {
         StopCoroutine(Hit());
         StartCoroutine(Hit());

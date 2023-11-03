@@ -4,11 +4,14 @@ using UnityEngine;
 
 public class Health : MonoBehaviour
 {
-    public delegate void OnChange(float change);
+    public delegate void OnChange(int result);
     public delegate void BasicDelegate();
     [SerializeField]
     int MaxHealth;
     int CurrentHealth;
+
+    public int GetMaxHealth { get => MaxHealth; }
+    public int GetCurrentHealth { get => CurrentHealth; }
 
     public OnChange OnHealthChange;
     public BasicDelegate OnHealthZero;

@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-
+using System.Linq;
 using UnityEngine;
 
 namespace Theo 
@@ -203,6 +203,82 @@ namespace Theo
             }
             return true;
         }
+        public IEnumerable<Collider> FindPotentialCollisions(Collider element)
+        {
+            var nodes = new Queue<QuadTree>();
+            var potentialCollisions = new List<Collider>();
+
+            nodes.Enqueue(this);
+
+            while (nodes.Count > 0)
+            {
+                var node = nodes.Dequeue();
+
+                if (!element.Bounds.Intersects(node.bounds))
+                {
+                    continue;
+                }
+
+                potentialCollisions.AddRange(node.elements);
+
+                if (!node.IsLeaf)
+                {
+                    if (element.Bounds.Intersects(node.upperLeft.bounds))
+                        nodes.Enqueue(node.upperLeft);
+
+                    if (element.Bounds.Intersects(node.upperRight.bounds))
+                        nodes.Enqueue(node.upperRight);
+
+                    if (element.Bounds.Intersects(node.bottomLeft.bounds))
+                        nodes.Enqueue(node.bottomLeft);
+
+                    if (element.Bounds.Intersects(node.bottomRight.bounds))
+                        nodes.Enqueue(node.bottomRight);
+
+                }
+            }
+            return potentialCollisions;
+        }
+
+
+
+        public IEnumerable<Collider> FindCollision(Collider element) 
+        {
+            var nodes = new Queue<QuadTree>();
+            var collisions = new List<Collider>();
+
+            nodes.Enqueue(this);
+
+            while (nodes.Count > 0) 
+            {
+                var node = nodes.Dequeue();
+
+                if (!element.Bounds.Intersects(node.bounds)) 
+                {
+                    continue;
+                }
+
+                collisions.AddRange(node.elements.Where(e => e.Bounds.Intersects(element.Bounds)));
+
+                if (!node.IsLeaf)
+                {
+                    if (element.Bounds.Intersects(node.upperLeft.bounds))
+                        nodes.Enqueue(node.upperLeft);
+
+                    if (element.Bounds.Intersects(node.upperRight.bounds))
+                        nodes.Enqueue(node.upperRight);
+
+                    if (element.Bounds.Intersects(node.bottomLeft.bounds))
+                        nodes.Enqueue(node.bottomLeft);
+
+                    if (element.Bounds.Intersects(node.bottomRight.bounds))
+                        nodes.Enqueue(node.bottomRight);
+
+                }
+            }
+            return collisions;
+        }
+
     }
 }
 

@@ -5,17 +5,40 @@ using Unity.Collections;
 using Unity.Mathematics;
 using Unity.Burst;
 using System;
+using System.Linq;
 using Theo;
 
 
 [System.Serializable]
-struct CollisionChannel 
+struct CollisionChannel
 {
     [SerializeField]
     public CollisionLayer layer;
     [SerializeField]
     public CollisionLayer[] canCollideWith;
 }
+public struct BoxCollisionJobInfo 
+{
+    NativeArray<Bounds> originalBounds;
+    NativeArray<Bounds> otherBounds;
+    NativeArray<int> hashList;
+
+    public BoxCollisionJobInfo(NativeArray<Bounds> originalBounds,
+                                NativeArray<Bounds> otherBounds,
+                                NativeArray<int> hashList) 
+    {
+        this.originalBounds = originalBounds;
+        this.otherBounds = otherBounds;
+        this.hashList = hashList;
+    }
+    public void Dispose() 
+    {
+        originalBounds.Dispose();
+        otherBounds.Dispose();
+        hashList.Dispose();
+    }
+} 
+
 [BurstCompile]
 public class ColliderSystem : MonoBehaviour
 {
@@ -24,13 +47,13 @@ public class ColliderSystem : MonoBehaviour
     CollisionChannel[] collisionChannels;
 
 
-    HashSet<Theo.Collider> TotalColliders = new HashSet<Theo.Collider>();
-    Dictionary<CollisionLayer,HashSet<Theo.Collider>> CollisionLayerDictionary = new Dictionary<CollisionLayer, HashSet<Theo.Collider>>();
+    Dictionary<int, Theo.Collider> TotalColliders = new Dictionary<int, Theo.Collider>();
+    Dictionary<CollisionLayer, HashSet<Theo.Collider>> CollisionLayerDictionary = new Dictionary<CollisionLayer, HashSet<Theo.Collider>>();
 
     Dictionary<JobHandle, NativeArray<int2>> Jobs = new Dictionary<JobHandle, NativeArray<int2>>();
-    HashSet<JobHandle> ActiveJobs = new HashSet<JobHandle>();
+    HashSet<BoxCollisionJobInfo> BoxCollisionJobInfoSet = new HashSet<BoxCollisionJobInfo>();
 
-    QuadTree quadtree;
+    //QuadTree quadtree;
     ColliderSystem()
     {
         if (ColliderSystem.Instance)
@@ -45,271 +68,172 @@ public class ColliderSystem : MonoBehaviour
     }
     private void Awake()
     {
-        foreach(var i in Enum.GetValues(typeof(CollisionLayer))) 
+        foreach (var i in Enum.GetValues(typeof(CollisionLayer)))
         {
-            CollisionLayerDictionary.Add((CollisionLayer)i,new HashSet<Theo.Collider>());
+            CollisionLayerDictionary.Add((CollisionLayer)i, new HashSet<Theo.Collider>());
         }
     }
     private void Start()
     {
-        quadtree =  new QuadTree(CameraBounds.GetCameraBoundsClass(),4,5);
+        //quadtree =  new QuadTree(CameraBounds.GetCameraBoundsClass(),4,5);
     }
 
-    public static ColliderSystem Instance 
+    public static ColliderSystem Instance
     {
         get => instance;
     }
 
-    public void Register(Theo.Collider collider) 
+    public void Register(Theo.Collider collider)
     {
         CollisionLayerDictionary[collider.InLayer].Add(collider);
-        TotalColliders.Add(collider);
+        TotalColliders.Add(collider.GetHashCode(), collider);
     }
-    public void DeRegister(Theo.Collider collider) 
+    public void DeRegister(Theo.Collider collider)
     {
         CollisionLayerDictionary[collider.InLayer].Remove(collider);
-        TotalColliders.Remove(collider);
-        quadtree.Remove(collider);
+        TotalColliders.Remove(collider.GetHashCode());
+        //quadtree.Remove(collider);
     }
-    private void Update()
+    private void FixedUpdate()
     {
-        foreach (Theo.Collider collider in TotalColliders) 
+        ProcessResults();
+        foreach (KeyValuePair<int, Theo.Collider> pair in TotalColliders)
         {
-            quadtree.Remove(collider);
-            collider.UpdateBounds();
-            quadtree.Insert(collider);
+            pair.Value.UpdateBounds();
         }
+
+        CreateCollisionJobs();
     }
 
     private void OnDrawGizmos()
     {
-        if (quadtree == null) return;
-        Gizmos.color = Color.black;
-        List<Bounds> allBounds = new List<Bounds>();
-        quadtree.GetAllBounds(ref allBounds);
-
-        Vector3[] boundPoints = new Vector3[4];
-        foreach(Bounds bound in allBounds)
-        {
-            boundPoints[0] = bound.center + new Vector3(-bound.extents.x,bound.extents.y);
-            boundPoints[1] = bound.center + new Vector3(bound.extents.x, bound.extents.y);
-            boundPoints[2] = bound.center + new Vector3(bound.extents.x, -bound.extents.y);
-            boundPoints[3] = bound.center + new Vector3(-bound.extents.x, -bound.extents.y);
-
-            Gizmos.DrawLine(boundPoints[0],boundPoints[1]);
-            Gizmos.DrawLine(boundPoints[1], boundPoints[2]);
-            Gizmos.DrawLine(boundPoints[2], boundPoints[3]);
-            Gizmos.DrawLine(boundPoints[3], boundPoints[0]);
-        }   
+     
     }
 
-    /*private void FixedUpdate()
+    [BurstCompile]
+    private void ProcessResults()
     {
+        if (Jobs.Count == 0) { return; }
 
-    foreach (HashSet<Theo.Collider> set in CollisionLayerDictionary.Values)
-    {
-        foreach (Theo.Collider collider in set)
+        foreach (var pair in Jobs)
         {
-            foreach (CollisionLayer layer in collider.CollideWith)
-            {
-                foreach (Theo.Collider other in CollisionLayerDictionary[layer])
-                {
-                    if (other == collider) { continue; }
+            pair.Key.Complete();
 
-                    collider.CalculateCollision(other);
+            foreach (int2 collisionPair in pair.Value)
+            {
+                if (collisionPair.x == 0) { continue; }
+                Theo.Collider col1;
+                bool ColOneExists = TotalColliders.TryGetValue(collisionPair.x, out col1);
+                Theo.Collider col2;
+                bool ColTwoExists = TotalColliders.TryGetValue(collisionPair.y, out col2);
+                if (ColOneExists && ColTwoExists)
+                {
+                    col1.onCollision?.Invoke(col2.gameObject);
                 }
             }
+            pair.Value.Dispose();
         }
-     }
-
-     }*/
-    /*  [BurstCompile]
-      private void ProcessResults() 
-      {
-          if (ActiveJobs.Count == 0) { return; }
-
-          foreach (JobHandle job in ActiveJobs) 
-          {
-              job.Complete();
-          }
-          foreach (var pair in Jobs) 
-          {
-              pair.Key.Complete();
-
-              foreach (int2 collisionPair in pair.Value) 
-              {
-                  if(collisionPair.x == 0) { continue; }
-                  Theo.Collider col1;
-                  bool ColOneExists = TotalColliders.TryGetValue(collisionPair.x, out col1);
-                  Theo.Collider col2;
-                  bool ColTwoExists = TotalColliders.TryGetValue(collisionPair.y, out col2);
-                  if (ColOneExists && ColTwoExists) 
-                  {
-                      col1.onCollision?.Invoke(col2.gameObject);
-                  }
-              }
-              pair.Value.Dispose();
-          }
-      }
-      [BurstCompile]
-      private void CreateCollisionJobs() 
-      {
-          foreach (CollisionChannel channel in collisionChannels)
-          {
-              HashSet<Theo.Collider> colliderSet = CollisionLayerDictionary[channel.layer];
-              NativeArray<NativeArray<float3>> ColliderPoints = new NativeArray<NativeArray<float3>>(colliderSet.Count,Allocator.TempJob);
-
-              int OtherColliderPointsCount = 0;
-              foreach(CollisionLayer layer in channel.canCollideWith) 
-              {
-                  OtherColliderPointsCount += CollisionLayerDictionary[layer].Count;
-              }
-
-              NativeArray<NativeArray<float3>> OtherColliderPoints = new NativeArray<NativeArray<float3>>(OtherColliderPointsCount, Allocator.TempJob);
-              NativeArray<int> HashList = new NativeArray<int>(colliderSet.Count + OtherColliderPointsCount,Allocator.TempJob);
+        foreach (BoxCollisionJobInfo info in BoxCollisionJobInfoSet)
+        {
+            info.Dispose();
+        }
+    }
+    [BurstCompile]
+    private void CreateCollisionJobs()
+    {
+        Jobs.Clear();
+        BoxCollisionJobInfoSet.Clear();
+        foreach (CollisionChannel channel in collisionChannels)
+        {
+  
+            HashSet<Theo.Collider> colliderSet = CollisionLayerDictionary[channel.layer];
+            if (colliderSet.Count == 0) { continue; }
+            int CollidersInOriginalLayer = CollisionLayerDictionary[channel.layer].Count;
 
 
-              NativeArray<Matrix4x4> FirstLocalToWorld = new NativeArray<Matrix4x4>(colliderSet.Count,Allocator.TempJob);
-              NativeArray<Matrix4x4> SecondLocalToWorld = new NativeArray<Matrix4x4>(OtherColliderPointsCount,Allocator.TempJob);
+            int CollidersInOtherLayers = 0;
+            foreach (CollisionLayer layer in channel.canCollideWith)
+            {
+                CollidersInOtherLayers += CollisionLayerDictionary[layer].Count;
+            }
+            if (CollidersInOriginalLayer == 0) { continue; }
 
-              int firstPassIndex = 0;
-              foreach (Theo.Collider col in colliderSet)
-              {
-                  ColliderPoints[firstPassIndex] = col.NativePoints;
-                  HashList[firstPassIndex] = col.GetHashCode();
-                  FirstLocalToWorld[firstPassIndex] = col.transform.localToWorldMatrix;
-                  firstPassIndex++;
-              }
+            NativeArray<Bounds> ColliderBounds = new NativeArray<Bounds>(CollidersInOriginalLayer, Allocator.TempJob);
 
-              int secondPassIndex = 0;
-              foreach (CollisionLayer layer in channel.canCollideWith)
-              {
-                  foreach (Theo.Collider col in CollisionLayerDictionary[layer]) 
-                  {
-                      OtherColliderPoints[secondPassIndex] = col.NativePoints;
-                      HashList[firstPassIndex + secondPassIndex] = col.GetHashCode();
-                      SecondLocalToWorld[secondPassIndex] = col.transform.localToWorldMatrix;
-                  }
-              }
-              NativeArray<int2> results = new NativeArray<int2>(colliderSet.Count + OtherColliderPointsCount,Allocator.TempJob);
 
-              NativeArray<NativeArray<float3>> FirstConvertedPoints = new NativeArray<NativeArray<float3>>(colliderSet.Count,Allocator.TempJob);
-              NativeArray<NativeArray<float3>> SecondConvertedPoints = new NativeArray<NativeArray<float3>>(OtherColliderPointsCount, Allocator.TempJob);
 
-              JobHandle DependancyOne = new ConvertLocalPointsToWorld(ColliderPoints, FirstLocalToWorld, FirstConvertedPoints).Schedule(colliderSet.Count,64);
-              JobHandle DependancyTwo = new ConvertLocalPointsToWorld(OtherColliderPoints, FirstLocalToWorld, FirstConvertedPoints).Schedule(OtherColliderPointsCount, 64);
+            NativeArray<Bounds> OtherColliderBounds = new NativeArray<Bounds>(CollidersInOtherLayers, Allocator.TempJob);
+            NativeArray<int> HashList = new NativeArray<int>(CollidersInOriginalLayer + CollidersInOtherLayers, Allocator.TempJob);
 
-              JobHandle job = new ComputePolygonCollisionsInLayer(
-                  FirstConvertedPoints,
-                  SecondConvertedPoints,
-                  HashList,
-                  results
-                  ).Schedule(OtherColliderPointsCount,1,JobHandle.CombineDependencies(DependancyOne,DependancyTwo));
 
-              ActiveJobs.Add(DependancyOne);
-              ActiveJobs.Add(DependancyTwo);
-              ActiveJobs.Add(job);
+            int firstPassIndex = 0;
 
-              Jobs.Add(job, results);
-          }
-      }
-  }
-  [BurstCompile]
-  struct ConvertLocalPointsToWorld: IJobParallelFor 
-  {
-      [ReadOnly]
-      NativeArray<NativeArray<float3>> LocalPoints;
-      [ReadOnly]
-      NativeArray<Matrix4x4> LocalToWorld;
+            foreach (Theo.Collider col in colliderSet)
+            {
+                ColliderBounds[firstPassIndex] = col.Bounds;
+                HashList[firstPassIndex] = col.GetHashCode();
+                firstPassIndex++;
+            }
 
-      NativeArray<NativeArray<float3>> Result;
+            int secondPassIndex = 1;
 
-      public ConvertLocalPointsToWorld(NativeArray<NativeArray<float3>> LocalPoints, NativeArray<Matrix4x4> LocalToWorld, NativeArray<NativeArray<float3>> Result) 
-      {
-          this.LocalPoints = LocalPoints;
-          this.LocalToWorld = LocalToWorld;
-          this.Result = Result;
-      }
-      [BurstCompile]
-      public void Execute(int i) 
-      {
-          NativeArray<float3> result = new NativeArray<float3>(LocalPoints[i].Length,Allocator.TempJob);
-          result.CopyFrom(LocalPoints[i]);
+            foreach (CollisionLayer layer in channel.canCollideWith)
+            {
+                foreach (Theo.Collider col in CollisionLayerDictionary[layer])
+                {
+                    OtherColliderBounds[secondPassIndex - 1] = col.Bounds;
+                    HashList[firstPassIndex + secondPassIndex-1] = col.GetHashCode();
+                    secondPassIndex++;
+                }
+            }
 
-          for (int j = 0; j < result.Length; j++) 
-          {
-              //Result[i][j] = LocalToWorld[i].MultiplyPoint(LocalPoints[i][j]);
-              result[j] = LocalToWorld[i].MultiplyPoint(result[j]);
-          }
-          Result[i] = result;
-      }
-  }
-  [BurstCompile]
-  struct ComputePolygonCollisionsInLayer : IJobParallelFor
-  {
-      [ReadOnly]
-      NativeArray<NativeArray<float3>> ColliderPoints;
-      [ReadOnly]
-      NativeArray<NativeArray<float3>> OtherColliderPoints;
-      //Hashlist has to be Colliderpoints + OtherColliderpoints in lenght and in that order, a hashkey has to correspond to appropriate colliderpoints
-      [ReadOnly]
-      NativeArray<int> HashList;
+            NativeArray<int2> results = new NativeArray<int2>(CollidersInOriginalLayer + CollidersInOtherLayers, Allocator.TempJob);
 
-      NativeArray<int2> Results;
+            JobHandle job = new ComputeBoxCollisionsInLayer(
+                ColliderBounds,
+                OtherColliderBounds,
+                HashList,
+                results
+                ).Schedule(CollidersInOriginalLayer, (CollidersInOriginalLayer < 100)? 128: 64);
+            Jobs.Add(job, results);
+            BoxCollisionJobInfoSet.Add(new BoxCollisionJobInfo(ColliderBounds,OtherColliderBounds,HashList));
+        }
+    }
+}
 
-      public ComputePolygonCollisionsInLayer(NativeArray<NativeArray<float3>> ColliderPoints, 
-                                             NativeArray<NativeArray<float3>> OtherColliderPoints,
-                                             NativeArray<int> HashList,
-                                             NativeArray<int2> Results) 
-      {
-          this.ColliderPoints = ColliderPoints;
-          this.OtherColliderPoints = OtherColliderPoints;
-          this.HashList = HashList;
-          this.Results = Results;
-      }
-      [BurstCompile]
-      public void Execute(int i) 
-      {
-          for(int j = 0; j < OtherColliderPoints.Length; j++) 
-          {
-              bool registeredCollisionA = CheckIfPointsInsidePolygon(ColliderPoints[i], OtherColliderPoints[j]);
-              bool registeredCollisionB = CheckIfPointsInsidePolygon(ColliderPoints[j], OtherColliderPoints[i]);
+[BurstCompile]
+struct ComputeBoxCollisionsInLayer : IJobParallelFor
+{
+    [ReadOnly]
+    NativeArray<Bounds> OriginalLayerBounds;
+    [ReadOnly]
+    NativeArray<Bounds> OtherLayerBounds;
+    //Hashlist has to be Colliderpoints + OtherColliderpoints in lenght and in that order, a hashkey has to correspond to appropriate colliderpoints
+    [ReadOnly]
+    NativeArray<int> HashList;
+    NativeArray<int2> Results;
 
-              if (registeredCollisionA || registeredCollisionB)
-              {
-                  Results[i] = new int2(HashList[i], HashList[ColliderPoints.Length + j]);
-              }
-              else 
-              {
-                  Results[i] = new int2(0, 0);
-              }
-          }
-      }
-      [BurstCompile]
-      private bool CheckIfPointsInsidePolygon(NativeArray<float3> a, NativeArray<float3> b)
-      {
-          foreach (float3 otherPoint in a)
-          {
-              for (int i = 0; i < b.Length; i++)
-              {
-                  float3 AtoB = ((i + 1 == b.Length) ? b[0] : b[i + 1]) - b[i];
-                  float3 AtoC = otherPoint - b[i];
-                  float3 cross = math.cross(AtoB, AtoC);
-
-                  // the point is to the left of the vector which means that its outside 
-                  if (cross.z > 0)
-                  {
-                      break;
-                  }
-
-                  if (i == a.Length - 1 && cross.z < 0)
-                  {
-                      return true;
-                  }
-              }
-          }
-          return false;
-      }*/
-
+    public ComputeBoxCollisionsInLayer(NativeArray<Bounds> OriginalLayerBounds,
+                                           NativeArray<Bounds> OtherLayerBounds,
+                                           NativeArray<int> HashList,
+                                           NativeArray<int2> Results)
+    {
+        this.OriginalLayerBounds = OriginalLayerBounds;
+        this.OtherLayerBounds = OtherLayerBounds;
+        this.HashList = HashList;
+        this.Results = Results;
+    }
+    [BurstCompile]
+    public void Execute(int i)
+    {
+        for (int j = 0; j < OtherLayerBounds.Length; j++)
+        {
+            if (OriginalLayerBounds[i].Intersects(OtherLayerBounds[j]))
+            {
+                Results[i] = new int2(HashList[i], HashList[OriginalLayerBounds.Length + j]);
+                break;
+            }
+        }
+    }
 }
 

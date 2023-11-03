@@ -65,5 +65,9 @@ namespace AI
             float UnScaledSpeed = brain.Blackboard.GetValueAsFloat(SpeedKeyName);
             LerpTime = EstimatedPathMagnitude/UnScaledSpeed;
         }
+        public override void Reset()
+        {
+          
+        }
     }
 }

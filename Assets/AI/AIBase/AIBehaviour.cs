@@ -21,5 +21,6 @@ namespace AI
         public abstract void Initalize(Brain brain);
         public abstract void OnBehaviourStart(Brain brain);
         public abstract void OnBehaviourEnd(Brain brain);
+        public virtual void Reset(){ }
     }
 }

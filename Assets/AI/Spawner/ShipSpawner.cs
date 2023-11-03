@@ -20,19 +20,29 @@ public class ShipSpawner : MonoBehaviour
 
     Vector2 CameraBounds;
 
-
-    float ShipSpawnTime = 3;
+    [SerializeField]
+    float InitialSpawnTime = 3f;
+    [SerializeField]
+    float TargetSpawnTime = 0.1f;
+    float TimeUntilReachTargetSpawnTime = 150;
+    
+    float SpawnTimeDelta;
+    [SerializeField]
+    float ShipSpawnTime = 0;
     float ShipSpawnTimer = 0;
     void Start()
     {
         Ship_Basic_Pooler.Initialize(Ship_Prefab,OnPop, OnQueue);
         CameraBounds = new Vector2(Camera.main.orthographicSize * (float)(16.0/9.0),Camera.main.orthographicSize);
         SpawnBasicShipInVPattern();
+        ShipSpawnTime = InitialSpawnTime;
+        SpawnTimeDelta = InitialSpawnTime - TargetSpawnTime;
     }
 
     // Update is called once per frame
     void Update()
     {
+        ShipSpawnTime   = (ShipSpawnTime <= TargetSpawnTime) ? 0 : ShipSpawnTime - (SpawnTimeDelta * Time.deltaTime /  TimeUntilReachTargetSpawnTime);
         ShipSpawnTimer += Time.deltaTime;
 
         if (ShipSpawnTimer >= ShipSpawnTime) 

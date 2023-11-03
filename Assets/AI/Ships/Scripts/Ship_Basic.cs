@@ -30,7 +30,7 @@ namespace AI
         }
         protected virtual void OnHealthZero() 
         {
-            Destroy(this.gameObject);
+            brain.DestroyHost();    
         }
         public void SetInitialPosition(Vector2 position) 
         {

@@ -120,7 +120,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 159788e523353e64791062481eeea045, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MovementSpeed: 30
+  MovementSpeed: 100
 --- !u!114 &7368546705510429102
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -162,7 +162,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   inLayer: 2
-  collideWith: 01000000
   points:
   - x: 8
     y: -6

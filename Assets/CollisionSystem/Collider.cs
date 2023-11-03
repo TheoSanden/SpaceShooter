@@ -12,20 +12,29 @@ namespace Theo
         Player,
         Enemy
     }
+    public struct ColliderInfo 
+    {
+        public NativeArray<float3> points;
+        public Matrix4x4 localToWorld;
+    }
     public abstract class Collider : MonoBehaviour
     {
         [SerializeField]
         CollisionLayer inLayer;
-        [SerializeField]
-        CollisionLayer[] collideWith;
         public CollisionLayer InLayer { get => inLayer; }
-        public CollisionLayer[] CollideWith { get => collideWith; }
 
         [SerializeField]
         protected float3[] points;
 
-        [ReadOnly,NativeDisableContainerSafetyRestriction]
-        protected NativeArray<float3> points_NativeArray;
+        private ColliderInfo info;
+        public ColliderInfo Info 
+        {
+            get 
+            {
+                info.localToWorld = this.transform.localToWorldMatrix;
+                return info;
+            }
+        }
 
         protected Bounds bounds;
         public Bounds Bounds 
@@ -34,11 +43,6 @@ namespace Theo
             {
                 return bounds;
             }
-        }
-
-        public NativeArray<float3> NativePoints 
-        {
-            get => points_NativeArray;
         }
         public float3[] LocalPoints 
         {
@@ -58,13 +62,19 @@ namespace Theo
         }
         public delegate void OnCollision(GameObject Other);
         public OnCollision onCollision;
-        //public abstract bool IsInside(Collider Other);
-        public abstract void CalculateCollision(Collider other);
         protected virtual void CalculateBounds() 
         {
             float x = 0;
             float y = 0;
-            foreach(float3 point in points) 
+
+            float3[] rotatedPoints = new float3[points.Length];
+            for (int i = 0; i < points.Length; i++)
+            {
+                rotatedPoints[i] = transform.localToWorldMatrix.MultiplyPoint(points[i]);
+                rotatedPoints[i] -= (float3)transform.position;
+            }
+
+            foreach (float3 point in rotatedPoints) 
             {
                 if(Mathf.Abs(point.x) > x) { x = point.x; }
                 if(Mathf.Abs(point.y) > y) { y = point.y; }
@@ -73,17 +83,18 @@ namespace Theo
 
             bounds = new Bounds(this.transform.position, size);
         }
-        void CreateNativeArrayPoints() 
+        void CreateInfo() 
         {
-            points_NativeArray = new NativeArray<float3>(points.Length, Allocator.Persistent);
+            info = new ColliderInfo();
+            info.points = new NativeArray<float3>(points.Length, Allocator.Persistent);
             for (int i = 0; i < points.Length; i++)
             {
-                points_NativeArray[i] = points[i];
+                info.points[i] = points[i];
             }
         }
         private void Awake()
         {
-            CreateNativeArrayPoints();
+            CreateInfo();
             CalculateBounds();
         }
         protected virtual void OnEnable()
@@ -106,13 +117,13 @@ namespace Theo
             {
                 ColliderSystem.Instance.DeRegister(this);
             }
-            points_NativeArray.Dispose();
+            info.points.Dispose();
         }
 
 
         public void UpdateBounds()
         {
-            bounds.center = this.transform.position;
+            CalculateBounds();
         }
     }
 }
